@@ -2,7 +2,7 @@
   "name": "BoardGame Timer",
   "short_name": "BGTimer",
   "description": "Professional boardgame timer with dual modes and player management",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#2196F3",
