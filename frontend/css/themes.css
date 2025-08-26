@@ -1,0 +1,280 @@
+/* Light Theme (Default) */
+:root {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #fafafa;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-muted: #999999;
+    --border-color: #e0e0e0;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
+    --accent-primary: #2196F3;
+    --accent-secondary: #1976D2;
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --error-color: #F44336;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2a2a2a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-muted: #888888;
+    --border-color: #333333;
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.4);
+    --shadow-heavy: rgba(0, 0, 0, 0.6);
+    --accent-primary: #64B5F6;
+    --accent-secondary: #42A5F5;
+    --success-color: #66BB6A;
+    --warning-color: #FFA726;
+    --error-color: #EF5350;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.screen {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Header Controls */
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-controls h1 {
+    margin: 0;
+    flex: 1;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.control-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px var(--shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-medium);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+.control-btn.disabled {
+    opacity: 0.5;
+    background: var(--bg-tertiary);
+}
+
+/* Legacy theme-toggle class for compatibility */
+.theme-toggle {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px var(--shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Update existing components with theme variables */
+.player-setup,
+.mode-selection,
+.template-selection {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.player-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.player-name,
+.color-picker {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-primary {
+    background: var(--accent-primary);
+    border-color: var(--accent-secondary);
+}
+
+.btn-primary:hover {
+    background: var(--accent-secondary);
+}
+
+.btn-add {
+    background: var(--success-color);
+    color: white;
+}
+
+.remove-player {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Game screen theming */
+#timer-display {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 16px var(--shadow-medium);
+}
+
+#current-player {
+    color: var(--text-primary);
+}
+
+#timer-value {
+    color: var(--text-primary);
+}
+
+.player-time {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+.player-time.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 20px var(--accent-primary);
+}
+
+/* Pause overlay theming */
+.pause-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.pause-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Resume banner theming */
+.resume-banner {
+    background: linear-gradient(135deg, var(--success-color), #45a049);
+}
+
+/* Custom Timer Inputs */
+.custom-timers {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.timer-input-group {
+    margin-bottom: 1rem;
+}
+
+.timer-input-group:last-child {
+    margin-bottom: 0;
+}
+
+.timer-input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.time-input {
+    width: 4rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-align: center;
+    font-size: 1rem;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.time-inputs span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    min-width: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .header-controls {
+        margin-bottom: 1rem;
+    }
+    
+    .header-controls h1 {
+        font-size: 1.5rem;
+    }
+    
+    .theme-toggle {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+    }
+    
+    .time-inputs {
+        justify-content: flex-start;
+    }
+    
+    .time-input {
+        width: 3.5rem;
+        font-size: 0.9rem;
+    }
+}

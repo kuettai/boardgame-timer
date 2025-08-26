@@ -1,0 +1,103 @@
+# Serverless Framework Configuration
+service: boardgame-timer
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  
+  environment:
+    TEMPLATES_TABLE: ${self:service}-templates-${self:provider.stage}
+    GAMES_TABLE: ${self:service}-games-${self:provider.stage}
+    
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TEMPLATES_TABLE}"
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.GAMES_TABLE}"
+
+functions:
+  # Template management
+  createTemplate:
+    handler: lambda_functions/template_crud.create_template
+    events:
+      - http:
+          path: templates
+          method: post
+          cors: true
+          
+  getTemplates:
+    handler: lambda_functions/template_crud.get_templates
+    events:
+      - http:
+          path: templates
+          method: get
+          cors: true
+          
+  # Game data management
+  saveGame:
+    handler: lambda_functions/game_history.save_game
+    events:
+      - http:
+          path: games
+          method: post
+          cors: true
+          
+  getGameHistory:
+    handler: lambda_functions/game_history.get_game_history
+    events:
+      - http:
+          path: games/{player_name}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    # DynamoDB Tables
+    TemplatesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TEMPLATES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: template_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: template_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        
+    GamesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.GAMES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: game_id
+            AttributeType: S
+          - AttributeName: player_name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: game_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: PlayerNameIndex
+            KeySchema:
+              - AttributeName: player_name
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux

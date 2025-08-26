@@ -1,0 +1,167 @@
+/* Player Setup Styles */
+.mode-selection {
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.mode-selection label {
+    display: block;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.mode-selection input[type="radio"] {
+    margin-right: 0.5rem;
+    transform: scale(1.2);
+}
+
+.player-setup {
+    flex: 1;
+    margin-bottom: 2rem;
+}
+
+#players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.player-item {
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-left: 4px solid;
+}
+
+.player-number {
+    font-weight: bold;
+    min-width: 20px;
+}
+
+.player-name {
+    flex: 1;
+    background: transparent;
+    border: 1px solid #555;
+    color: var(--text);
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.player-name:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.color-picker {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 50%;
+}
+
+.color-picker::-webkit-color-swatch {
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.remove-player {
+    background: var(--error);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    padding: 0;
+}
+
+.error-message {
+    color: var(--error);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.player-item.error {
+    border-left-color: var(--error);
+}
+
+.player-item.error .player-name {
+    border-color: var(--error);
+}
+
+/* Template Selection */
+.template-selection {
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.template-selection h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.template-options label {
+    display: block;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.template-options input[type="radio"] {
+    margin-right: 0.5rem;
+    transform: scale(1.1);
+}
+
+/* Default Colors */
+.default-colors {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.color-option:hover {
+    border-color: #fff;
+}
+
+.color-option.used {
+    opacity: 0.3;
+    cursor: not-allowed;
+}

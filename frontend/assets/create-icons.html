@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#2196F3';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Timer icon (circle with clock hands)
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = size * 0.05;
+            
+            // Clock circle
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size * 0.3;
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Clock hands
+            ctx.lineWidth = size * 0.03;
+            
+            // Hour hand (pointing to 3)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + radius * 0.5, centerY);
+            ctx.stroke();
+            
+            // Minute hand (pointing to 12)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX, centerY - radius * 0.7);
+            ctx.stroke();
+            
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size * 0.02, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Download link
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL();
+            link.textContent = `Download ${size}x${size} icon`;
+            link.style.display = 'block';
+            link.style.margin = '10px';
+            document.body.appendChild(link);
+        }
+        
+        createIcon('canvas192', 192);
+        createIcon('canvas512', 512);
+    </script>
+</body>
+</html>

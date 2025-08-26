@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Click to Download Icons</h2>
+<button onclick="createIcon(192)">Download 192x192 Icon</button>
+<button onclick="createIcon(512)">Download 512x512 Icon</button>
+
+<script>
+function createIcon(size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    // Blue background
+    ctx.fillStyle = '#2196F3';
+    ctx.fillRect(0, 0, size, size);
+    
+    // White timer circle
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = size * 0.04;
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size * 0.3, 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    // Clock hands
+    ctx.lineWidth = size * 0.03;
+    ctx.beginPath();
+    ctx.moveTo(size/2, size/2);
+    ctx.lineTo(size/2 + size * 0.15, size/2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(size/2, size/2);
+    ctx.lineTo(size/2, size/2 - size * 0.2);
+    ctx.stroke();
+    
+    // Download
+    const link = document.createElement('a');
+    link.download = `icon-${size}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+</script>
+</body>
+</html>

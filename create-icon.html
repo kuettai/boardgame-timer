@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><title>Create Icon</title></head>
+<body>
+<canvas id="canvas" width="192" height="192"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Blue background
+ctx.fillStyle = '#2196F3';
+ctx.fillRect(0, 0, 192, 192);
+
+// White timer circle
+ctx.strokeStyle = 'white';
+ctx.lineWidth = 8;
+ctx.beginPath();
+ctx.arc(96, 96, 60, 0, 2 * Math.PI);
+ctx.stroke();
+
+// Clock hands
+ctx.lineWidth = 6;
+ctx.beginPath();
+ctx.moveTo(96, 96);
+ctx.lineTo(96 + 30, 96);
+ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(96, 96);
+ctx.lineTo(96, 96 - 40);
+ctx.stroke();
+
+// Center dot
+ctx.fillStyle = 'white';
+ctx.beginPath();
+ctx.arc(96, 96, 4, 0, 2 * Math.PI);
+ctx.fill();
+
+// Download
+const link = document.createElement('a');
+link.download = 'icon-192.png';
+link.href = canvas.toDataURL();
+link.click();
+</script>
+</body>
+</html>

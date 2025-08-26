@@ -1,0 +1,270 @@
+/* Visual Enhancement Animations */
+
+/* Player transition animations */
+.player-transition {
+    animation: playerChange 0.5s ease-in-out;
+}
+
+@keyframes playerChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Timer value animations */
+.timer-update {
+    animation: timerPulse 0.3s ease-out;
+}
+
+@keyframes timerPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Touch feedback ripple effect */
+.touch-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Smooth color transitions */
+.smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced overtime pulsing */
+.overtime-enhanced {
+    animation: overtimePulse 0.8s ease-in-out infinite;
+    background: linear-gradient(45deg, #ff4444, #ff6666, #ff4444) !important;
+    background-size: 200% 200% !important;
+    color: white !important;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 0 20px rgba(255, 68, 68, 0.5),
+        0 0 40px rgba(255, 68, 68, 0.3) !important;
+}
+
+@keyframes overtimePulse {
+    0%, 100% { 
+        transform: scale(1);
+        background-position: 0% 50%;
+        box-shadow: 
+            0 0 20px rgba(255, 68, 68, 0.5),
+            0 0 40px rgba(255, 68, 68, 0.3);
+    }
+    50% { 
+        transform: scale(1.02);
+        background-position: 100% 50%;
+        box-shadow: 
+            0 0 30px rgba(255, 68, 68, 0.7),
+            0 0 60px rgba(255, 68, 68, 0.4);
+    }
+}
+
+/* Player card hover effects */
+.player-time:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* Active player glow effect */
+.active-player {
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.4);
+    animation: activeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes activeGlow {
+    0% { box-shadow: 0 0 20px rgba(33, 150, 243, 0.4); }
+    100% { box-shadow: 0 0 30px rgba(33, 150, 243, 0.6); }
+}
+
+/* Button press animations */
+.btn-press {
+    animation: buttonPress 0.1s ease-out;
+}
+
+@keyframes buttonPress {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* Fade in animations for UI elements */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading spinner for transitions */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Resume Banner */
+.resume-banner {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.resume-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.resume-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.resume-buttons button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.resume-buttons .btn-primary {
+    background: white;
+    color: #4CAF50;
+}
+
+.resume-buttons .btn-secondary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.resume-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Pause State Visuals */
+.paused {
+    filter: brightness(0.7) saturate(0.8);
+    transition: filter 0.3s ease;
+}
+
+.pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+    pointer-events: none;
+}
+
+.pause-content {
+    text-align: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2rem;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+.pause-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.pause-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.pause-subtitle {
+    font-size: 1rem;
+    opacity: 0.8;
+    font-weight: normal;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* PWA Install Button */
+.install-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    display: block;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Hide install button in standalone mode */
+@media (display-mode: standalone) {
+    .install-btn {
+        display: none !important;
+    }
+}
+
+.install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #45a049, #4CAF50);
+}
+
+.install-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}

@@ -1,0 +1,19 @@
+{
+  "name": "boardgame-timer",
+  "version": "1.0.0",
+  "description": "Serverless boardgame timer for mobile devices",
+  "main": "frontend/index.html",
+  "scripts": {
+    "dev": "live-server frontend --port=3000 --open=/",
+    "build": "echo 'Build process - minify CSS/JS'",
+    "test": "echo 'Run tests'",
+    "deploy": "aws s3 sync frontend/ s3://boardgame-timer-bucket --delete"
+  },
+  "keywords": ["boardgame", "timer", "mobile", "serverless"],
+  "author": "BoardGame Timer Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {}
+}
