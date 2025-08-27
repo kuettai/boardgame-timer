@@ -16,6 +16,8 @@ class TimerEngine {
         this.lastUpdateTime = null;
         this.timerInterval = null;
         this.updateCallback = null;
+        this.turnHistory = [];
+        this.maxHistoryItems = 10;
     }
 
     start() {
@@ -103,6 +105,9 @@ class TimerEngine {
         // Get current player before changing
         const currentPlayer = this.players[this.currentPlayerIndex];
         
+        // Record turn in history
+        this.recordTurn(currentPlayer);
+        
         // Mark current player as inactive and increment their turn count
         currentPlayer.isActive = false;
         currentPlayer.turnsCount++;
@@ -160,6 +165,58 @@ class TimerEngine {
                 mode: this.mode
             });
         }
+    }
+
+    recordTurn(player) {
+        // Calculate turn time based on mode
+        let turnTime = 0;
+        
+        if (this.mode === 1) {
+            // Mode 1: Calculate time spent this turn
+            const lastHistory = this.turnHistory.find(h => h.playerId === player.id);
+            const previousTotal = lastHistory ? lastHistory.previousTotal : 0;
+            turnTime = player.totalTime - previousTotal;
+        } else {
+            // Mode 2: Time used from turn timer
+            turnTime = (this.template?.turn_time_seconds || 60) - (player.turnTime || 0);
+        }
+            
+        const historyItem = {
+            playerId: player.id,
+            playerName: player.name,
+            playerColor: player.color,
+            turnTime: Math.max(0, turnTime),
+            timestamp: Date.now(),
+            turnNumber: player.turnsCount + 1,
+            previousTotal: player.totalTime
+        };
+        
+        this.turnHistory.unshift(historyItem);
+        
+        // Keep only recent turns
+        if (this.turnHistory.length > this.maxHistoryItems) {
+            this.turnHistory = this.turnHistory.slice(0, this.maxHistoryItems);
+        }
+        
+        this.updateTurnHistoryDisplay();
+    }
+    
+    updateTurnHistoryDisplay() {
+        const historyList = document.getElementById('history-list');
+        if (!historyList) return;
+        
+        if (this.turnHistory.length === 0) {
+            historyList.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 1rem;">No turns yet</div>';
+            return;
+        }
+        
+        historyList.innerHTML = this.turnHistory.map(item => `
+            <div class="history-item" style="border-left-color: ${item.playerColor}">
+                <span class="history-turn">#${item.turnNumber}</span>
+                <span class="history-player">${item.playerName}</span>
+                <span class="history-time">${this.formatTime(item.turnTime)}</span>
+            </div>
+        `).join('');
     }
 
     formatTime(seconds) {

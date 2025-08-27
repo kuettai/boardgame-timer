@@ -163,7 +163,17 @@ class SoundManager {
 
     playGameEnd() {
         console.log('Playing game end sound');
-        this.playFallbackSound('beep3');
+        if (this.audioContext && this.audioContext.state === 'running') {
+            // Play celebratory ascending chord
+            const notes = [523, 659, 784, 1047]; // C, E, G, C (major chord)
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    this.playTone(freq, 0.4, 'sine');
+                }, index * 100);
+            });
+        } else {
+            this.playFallbackSound('beep2');
+        }
     }
 
     playPause() {
@@ -179,15 +189,27 @@ class SoundManager {
     playOvertime() {
         console.log('Playing overtime sound');
         if (this.audioContext && this.audioContext.state === 'running') {
-            this.sounds.overtime();
+            // Play urgent triple beep for overtime
+            this.playTone(300, 0.15, 'sawtooth');
+            setTimeout(() => this.playTone(300, 0.15, 'sawtooth'), 200);
+            setTimeout(() => this.playTone(300, 0.15, 'sawtooth'), 400);
         } else {
-            this.playFallbackSound();
+            this.playFallbackSound('beep3');
         }
     }
 
     playButton() {
         console.log('Playing button sound...');
         this.playFallbackSound('beep1');
+    }
+    
+    playTurnAlert() {
+        console.log('Playing turn alert sound');
+        if (this.audioContext && this.audioContext.state === 'running') {
+            this.playTone(1200, 0.15, 'sine');
+        } else {
+            this.playFallbackSound('beep2');
+        }
     }
     
     playFallbackSound(type = 'beep1') {

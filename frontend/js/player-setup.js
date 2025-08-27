@@ -19,8 +19,8 @@ class PlayerSetup {
     }
 
     addDefaultPlayers() {
-        this.addPlayer('Player 1', this.defaultColors[0]);
-        this.addPlayer('Player 2', this.defaultColors[1]);
+        this.addPlayer('P1', this.defaultColors[0]);
+        this.addPlayer('P2', this.defaultColors[1]);
     }
 
     bindEvents() {
@@ -29,7 +29,7 @@ class PlayerSetup {
             
             if (this.players.length < this.maxPlayers) {
                 const nextColor = this.getNextAvailableColor();
-                this.addPlayer(`Player ${this.players.length + 1}`, nextColor);
+                this.addPlayer(`P${this.players.length + 1}`, nextColor);
             }
         });
 
@@ -190,6 +190,7 @@ class PlayerSetup {
             playerDiv.dataset.playerId = player.id;
 
             playerDiv.innerHTML = `
+                <span class="drag-handle">⋮⋮</span>
                 <span class="player-number">${index + 1}</span>
                 <input type="text" class="player-name" value="${player.name}" 
                        placeholder="Player name" maxlength="20" data-player-id="${player.id}">
@@ -197,6 +198,10 @@ class PlayerSetup {
                 ${this.players.length > this.minPlayers ? 
                     `<button class="remove-player" data-player-id="${player.id}">×</button>` : ''}
             `;
+            
+            // Make draggable
+            playerDiv.draggable = true;
+            playerDiv.dataset.index = index;
 
             container.appendChild(playerDiv);
         });
@@ -259,6 +264,12 @@ class PlayerSetup {
         container.addEventListener('input', this.handlePlayerInput);
         container.addEventListener('change', this.handlePlayerChange);
         container.addEventListener('click', this.handlePlayerClick);
+        
+        // Add drag and drop handlers (only once)
+        if (!container.dataset.dragBound) {
+            this.bindDragEvents(container);
+            container.dataset.dragBound = 'true';
+        }
     }
 
     updatePlayerCount() {
@@ -331,6 +342,136 @@ class PlayerSetup {
         }
         
         return gameData;
+    }
+    
+    bindDragEvents(container) {
+        let draggedElement = null;
+        
+        // Desktop drag events
+        container.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('player-item')) {
+                draggedElement = e.target;
+                e.target.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+        
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+        
+        container.addEventListener('dragenter', (e) => {
+            if (e.target.classList.contains('player-item') && e.target !== draggedElement) {
+                e.target.style.borderTop = '2px solid var(--accent-primary)';
+            }
+        });
+        
+        container.addEventListener('dragleave', (e) => {
+            if (e.target.classList.contains('player-item')) {
+                e.target.style.borderTop = '';
+            }
+        });
+        
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.target.classList.contains('player-item') && e.target !== draggedElement && draggedElement) {
+                // Get fresh indices from DOM
+                const allItems = Array.from(container.querySelectorAll('.player-item'));
+                const draggedIndex = allItems.indexOf(draggedElement);
+                const targetIndex = allItems.indexOf(e.target);
+                
+                this.reorderPlayers(draggedIndex, targetIndex);
+                draggedElement = null;
+            }
+            this.cleanupDragStyles();
+        });
+        
+        container.addEventListener('dragend', (e) => {
+            this.cleanupDragStyles();
+            draggedElement = null;
+        });
+        
+        // Mobile touch events
+        let touchStartY = 0;
+        let touchElement = null;
+        
+        container.addEventListener('touchstart', (e) => {
+            const dragHandle = e.target.closest('.drag-handle');
+            if (dragHandle) {
+                e.preventDefault();
+                touchElement = dragHandle.closest('.player-item');
+                touchStartY = e.touches[0].clientY;
+                touchElement.style.opacity = '0.7';
+                touchElement.style.transform = 'scale(1.05)';
+                touchElement.style.zIndex = '1000';
+            }
+        }, { passive: false });
+        
+        container.addEventListener('touchmove', (e) => {
+            if (touchElement) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaY = touch.clientY - touchStartY;
+                touchElement.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+                
+                // Find element under touch
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetItem = elementBelow?.closest('.player-item');
+                
+                // Clear previous highlights
+                container.querySelectorAll('.player-item').forEach(item => {
+                    item.style.borderTop = '';
+                });
+                
+                // Highlight target
+                if (targetItem && targetItem !== touchElement) {
+                    targetItem.style.borderTop = '2px solid var(--accent-primary)';
+                }
+            }
+        }, { passive: false });
+        
+        container.addEventListener('touchend', (e) => {
+            if (touchElement) {
+                const touch = e.changedTouches[0];
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetItem = elementBelow?.closest('.player-item');
+                
+                if (targetItem && targetItem !== touchElement) {
+                    // Get fresh indices from DOM
+                    const allItems = Array.from(container.querySelectorAll('.player-item'));
+                    const fromIndex = allItems.indexOf(touchElement);
+                    const toIndex = allItems.indexOf(targetItem);
+                    
+                    this.reorderPlayers(fromIndex, toIndex);
+                }
+                
+                this.cleanupDragStyles();
+                touchElement = null;
+            }
+        });
+    }
+    
+    reorderPlayers(fromIndex, toIndex) {
+        if (fromIndex === toIndex) return;
+        
+        // Move player in array
+        const player = this.players.splice(fromIndex, 1)[0];
+        this.players.splice(toIndex, 0, player);
+        
+        // Re-render list
+        this.renderPlayersList();
+        this.updatePlayerCount();
+    }
+    
+    cleanupDragStyles() {
+        const container = document.getElementById('players-list');
+        container.querySelectorAll('.player-item').forEach(item => {
+            item.style.opacity = '';
+            item.style.transform = '';
+            item.style.borderTop = '';
+            item.style.zIndex = '';
+        });
     }
 
     startGame() {

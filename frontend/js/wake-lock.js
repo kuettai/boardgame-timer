@@ -1,2 +1,70 @@
 class WakeLockManager {
-    constructor() {\n        this.wakeLock = null;\n        this.isSupported = 'wakeLock' in navigator;\n    }\n\n    async requestWakeLock() {\n        if (!this.isSupported) {\n            console.log('Wake Lock API not supported');\n            return false;\n        }\n\n        try {\n            this.wakeLock = await navigator.wakeLock.request('screen');\n            console.log('Screen wake lock activated');\n            \n            // Listen for wake lock release\n            this.wakeLock.addEventListener('release', () => {\n                console.log('Screen wake lock released');\n                this.wakeLock = null;\n            });\n            \n            return true;\n        } catch (err) {\n            console.error('Failed to activate wake lock:', err);\n            return false;\n        }\n    }\n\n    async releaseWakeLock() {\n        if (this.wakeLock) {\n            try {\n                await this.wakeLock.release();\n                this.wakeLock = null;\n                console.log('Wake lock released manually');\n            } catch (err) {\n                console.error('Failed to release wake lock:', err);\n            }\n        }\n    }\n\n    // Handle visibility change (when user switches tabs/apps)\n    handleVisibilityChange() {\n        if (document.visibilityState === 'visible' && !this.wakeLock) {\n            // Re-request wake lock when returning to app\n            this.requestWakeLock();\n        }\n    }\n\n    // Initialize wake lock management\n    init() {\n        // Handle visibility changes\n        document.addEventListener('visibilitychange', () => {\n            this.handleVisibilityChange();\n        });\n        \n        // Handle page unload\n        window.addEventListener('beforeunload', () => {\n            this.releaseWakeLock();\n        });\n    }\n\n    // Get wake lock status\n    isActive() {\n        return this.wakeLock !== null;\n    }\n}\n\n// Make WakeLockManager globally available\nwindow.WakeLockManager = new WakeLockManager();
+    constructor() {
+        this.wakeLock = null;
+        this.isSupported = 'wakeLock' in navigator;
+    }
+
+    async requestWakeLock() {
+        if (!this.isSupported) {
+            console.log('Wake Lock API not supported');
+            return false;
+        }
+
+        try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Screen wake lock activated');
+            
+            // Listen for wake lock release
+            this.wakeLock.addEventListener('release', () => {
+                console.log('Screen wake lock released');
+                this.wakeLock = null;
+            });
+            
+            return true;
+        } catch (err) {
+            console.error('Failed to activate wake lock:', err);
+            return false;
+        }
+    }
+
+    async releaseWakeLock() {
+        if (this.wakeLock) {
+            try {
+                await this.wakeLock.release();
+                this.wakeLock = null;
+                console.log('Wake lock released manually');
+            } catch (err) {
+                console.error('Failed to release wake lock:', err);
+            }
+        }
+    }
+
+    // Handle visibility change (when user switches tabs/apps)
+    handleVisibilityChange() {
+        if (document.visibilityState === 'visible' && !this.wakeLock) {
+            // Re-request wake lock when returning to app
+            this.requestWakeLock();
+        }
+    }
+
+    // Initialize wake lock management
+    init() {
+        // Handle visibility changes
+        document.addEventListener('visibilitychange', () => {
+            this.handleVisibilityChange();
+        });
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            this.releaseWakeLock();
+        });
+    }
+
+    // Get wake lock status
+    isActive() {
+        return this.wakeLock !== null;
+    }
+}
+
+// Make WakeLockManager globally available
+window.WakeLockManager = new WakeLockManager();

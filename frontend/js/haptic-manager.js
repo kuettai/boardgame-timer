@@ -26,7 +26,7 @@ class HapticManager {
 
     vibrateGameEnd() {
         if (this.isEnabled && this.isSupported) {
-            navigator.vibrate([200, 100, 200, 100, 200]); // Triple pulse
+            navigator.vibrate([100, 50, 100, 50, 100, 50, 200]); // Celebratory pattern
         }
     }
 
@@ -45,6 +45,12 @@ class HapticManager {
     vibrateOvertime() {
         if (this.isEnabled && this.isSupported) {
             navigator.vibrate([100, 50, 100, 50, 100]); // Alert pattern
+        }
+    }
+    
+    vibrateTurnAlert() {
+        if (this.isEnabled && this.isSupported) {
+            navigator.vibrate([75, 25, 75]); // Quick double pulse for warnings
         }
     }
 
