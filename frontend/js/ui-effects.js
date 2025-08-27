@@ -66,9 +66,97 @@ class UIEffects {
         
         if (isOvertime) {
             element.classList.add('overtime-enhanced');
+            this.startOvertimeScreenEffect();
         } else {
             element.classList.remove('overtime-enhanced');
+            this.stopOvertimeScreenEffect();
         }
+    }
+    
+    startOvertimeScreenEffect() {
+        const gameScreen = document.getElementById('game-screen');
+        if (gameScreen && !gameScreen.classList.contains('overtime-screen')) {
+            gameScreen.classList.add('overtime-screen');
+            
+            // Flash screen red when overtime starts
+            this.flashScreen('rgba(244, 67, 54, 0.4)', 300);
+        }
+    }
+    
+    stopOvertimeScreenEffect() {
+        const gameScreen = document.getElementById('game-screen');
+        if (gameScreen) {
+            gameScreen.classList.remove('overtime-screen');
+        }
+    }
+    
+    triggerUrgentAlert() {
+        const timerValue = document.getElementById('timer-value');
+        const gameScreen = document.getElementById('game-screen');
+        
+        if (timerValue) {
+            timerValue.style.animation = 'urgentShake 0.5s ease-in-out';
+            setTimeout(() => {
+                timerValue.style.animation = '';
+            }, 500);
+        }
+        
+        if (gameScreen) {
+            gameScreen.style.animation = 'screenFlash 0.3s ease-in-out';
+            setTimeout(() => {
+                gameScreen.style.animation = '';
+            }, 300);
+        }
+    }
+    
+    createConfetti() {
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+        const confettiContainer = document.createElement('div');
+        confettiContainer.className = 'confetti-container';
+        confettiContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10000;
+        `;
+        
+        document.body.appendChild(confettiContainer);
+        
+        // Create confetti pieces
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti-piece';
+            
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = Math.random() * 8 + 4;
+            const startX = Math.random() * window.innerWidth;
+            const duration = Math.random() * 2 + 2;
+            const delay = Math.random() * 0.5;
+            
+            confetti.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                background: ${color};
+                left: ${startX}px;
+                top: -10px;
+                border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                animation: confettiFall ${duration}s linear ${delay}s forwards;
+                transform: rotate(${Math.random() * 360}deg);
+            `;
+            
+            confettiContainer.appendChild(confetti);
+        }
+        
+        // Remove confetti after animation
+        setTimeout(() => {
+            if (confettiContainer.parentNode) {
+                confettiContainer.parentNode.removeChild(confettiContainer);
+            }
+        }, 4000);
     }
 
     // Active player glow effect

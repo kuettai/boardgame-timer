@@ -17,6 +17,8 @@ class CountdownTimer extends TimerEngine {
             player.roundTime = this.template.round_time_seconds;
             player.isOvertime = false;
             player.overtimeSeconds = 0;
+            player.alert10Triggered = false;
+            player.alert5Triggered = false;
         });
     }
 
@@ -33,11 +35,22 @@ class CountdownTimer extends TimerEngine {
             // Mode 2: Countdown both timers
             currentPlayer.turnTime -= deltaTime;
             currentPlayer.roundTime -= deltaTime;
+            
+            // Turn alerts
+            if (currentPlayer.turnTime <= 10 && currentPlayer.turnTime > 5 && !currentPlayer.alert10Triggered) {
+                this.triggerTurnAlert(10);
+                currentPlayer.alert10Triggered = true;
+            }
+            if (currentPlayer.turnTime <= 5 && currentPlayer.turnTime > 0 && !currentPlayer.alert5Triggered) {
+                this.triggerTurnAlert(5);
+                currentPlayer.alert5Triggered = true;
+            }
 
             // Track overtime
             if (currentPlayer.turnTime <= 0 || currentPlayer.roundTime <= 0) {
                 if (!currentPlayer.isOvertime) {
                     currentPlayer.isOvertime = true;
+                    this.triggerOvertimeAlert();
                 }
                 currentPlayer.overtimeSeconds += deltaTime;
             }
@@ -78,6 +91,9 @@ class CountdownTimer extends TimerEngine {
         // Get current player before changing
         const currentPlayer = this.players[this.currentPlayerIndex];
         
+        // Record turn in history
+        this.recordTurn(currentPlayer);
+        
         // Mark current player as inactive and increment their turn count
         currentPlayer.isActive = false;
         currentPlayer.turnsCount++;
@@ -86,6 +102,8 @@ class CountdownTimer extends TimerEngine {
         if (this.mode === 2) {
             currentPlayer.turnTime = this.template.turn_time_seconds;
             currentPlayer.isOvertime = false; // Reset overtime for new turn
+            currentPlayer.alert10Triggered = false;
+            currentPlayer.alert5Triggered = false;
         }
 
         // Move to next player
@@ -104,6 +122,48 @@ class CountdownTimer extends TimerEngine {
         const secs = Math.floor(absSeconds % 60);
         const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         return isNegative ? `-${timeStr}` : timeStr;
+    }
+
+    triggerTurnAlert(seconds) {
+        // Visual alert
+        const timerValue = document.getElementById('timer-value');
+        if (timerValue) {
+            timerValue.style.animation = 'alertPulse 0.5s ease-in-out';
+            setTimeout(() => {
+                timerValue.style.animation = '';
+            }, 500);
+        }
+        
+        // Sound alert
+        if (window.SoundManager) {
+            window.SoundManager.playTurnAlert();
+        }
+        
+        // Haptic feedback
+        if (window.HapticManager) {
+            window.HapticManager.vibrateTurnAlert();
+        }
+        
+        console.log(`Turn alert: ${seconds} seconds remaining`);
+    }
+    
+    triggerOvertimeAlert() {
+        // Visual urgent alert
+        if (window.UIEffects) {
+            window.UIEffects.triggerUrgentAlert();
+        }
+        
+        // Sound alert
+        if (window.SoundManager) {
+            window.SoundManager.playOvertime();
+        }
+        
+        // Haptic feedback
+        if (window.HapticManager) {
+            window.HapticManager.vibrateOvertime();
+        }
+        
+        console.log('Overtime alert triggered');
     }
 
     getGameStats() {

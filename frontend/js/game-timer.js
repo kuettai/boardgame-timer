@@ -145,6 +145,13 @@ class GameTimer {
             // Remove heartbeat animation - it's distracting
             // this.uiEffects?.animateTimerUpdate(timerValueEl);
         }
+        
+        // Update game duration
+        const gameDurationEl = document.getElementById('game-duration');
+        if (gameDurationEl && this.timerEngine.startTime) {
+            const totalGameTime = (performance.now() - this.timerEngine.startTime) / 1000;
+            gameDurationEl.textContent = `Game: ${this.timerEngine.formatTime(totalGameTime)}`;
+        }
 
         // Update all players display
         if (allPlayersEl) {
@@ -304,6 +311,12 @@ class GameTimer {
             this.uiEffects?.animateButtonPress(e.target);
             this.endGame();
         });
+        
+        // History toggle button
+        document.getElementById('history-toggle').addEventListener('click', (e) => {
+            this.uiEffects?.animateButtonPress(e.target);
+            this.toggleTurnHistory();
+        });
 
         // Handle visibility change (tab switching)
         document.addEventListener('visibilitychange', () => {
@@ -325,44 +338,131 @@ class GameTimer {
     }
 
     showGameStats(stats) {
-        // Enhanced stats display for both modes
-        let statsText = `Game Ended!\n\nTotal Game Time: ${this.timerEngine.formatTime(stats.totalGameTime)}\n`;
-        statsText += `Mode: ${stats.mode === 1 ? 'Time Tracking' : 'Countdown Timer'}\n\nPlayer Stats:\n`;
-        
-        stats.players.forEach(player => {
-            statsText += `\n${player.name}:\n`;
-            statsText += `  Total Time: ${this.timerEngine.formatTime(player.totalTime)}\n`;
-            statsText += `  Turns: ${player.turnsCount}\n`;
-            
-            if (player.turnsCount > 0) {
-                statsText += `  Avg Turn: ${this.timerEngine.formatTime(player.averageTurnTime)}\n`;
-            }
-            
-            if (stats.mode === 2) {
-                statsText += `  Final Turn Time: ${this.timerEngine.formatTime(player.finalTurnTime)}\n`;
-                statsText += `  Final Round Time: ${this.timerEngine.formatTime(player.finalRoundTime)}\n`;
-                if (player.wasOvertime) {
-                    statsText += `  Overtime: ${this.timerEngine.formatTime(player.overtimeSeconds)}\n`;
-                }
-            }
-        });
-
-        // Play game end sound
+        // Play game end sound and show confetti
         if (window.SoundManager) {
             console.log('Triggering game end sound');
             window.SoundManager.playGameEnd();
         }
         
-        alert(statsText);
+        if (window.UIEffects) {
+            window.UIEffects.createConfetti();
+        }
+        
+        if (window.HapticManager) {
+            window.HapticManager.vibrateGameEnd();
+        }
+        
+        // Show beautiful stats modal instead of alert
+        setTimeout(() => {
+            this.showStatsModal(stats);
+        }, 500);
 
         // Release wake lock when game ends
         if (window.WakeLockManager) {
             window.WakeLockManager.releaseWakeLock();
         }
         
-        // Clean up game state
+        // Don't cleanup immediately - let modal handle it
+    }
+    
+    showStatsModal(stats) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'stats-modal-overlay';
+        modal.innerHTML = `
+            <div class="stats-modal">
+                <div class="stats-header">
+                    <h2>🎉 Game Complete!</h2>
+                    <button class="stats-close">×</button>
+                </div>
+                <div class="stats-content">
+                    <div class="game-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Time:</span>
+                            <span class="summary-value">${this.timerEngine.formatTime(stats.totalGameTime)}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Mode:</span>
+                            <span class="summary-value">${stats.mode === 1 ? 'Time Tracking' : 'Countdown Timer'}</span>
+                        </div>
+                    </div>
+                    <div class="player-stats">
+                        ${stats.players.map(player => `
+                            <div class="player-stat" style="border-left-color: ${player.color}">
+                                <div class="player-stat-name" style="color: ${player.color}">${player.name}</div>
+                                <div class="player-stat-details">
+                                    <div class="stat-row">
+                                        <span>Total Time:</span>
+                                        <span>${this.timerEngine.formatTime(player.totalTime)}</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span>Turns:</span>
+                                        <span>${player.turnsCount}</span>
+                                    </div>
+                                    ${player.turnsCount > 0 ? `
+                                        <div class="stat-row">
+                                            <span>Avg Turn:</span>
+                                            <span>${this.timerEngine.formatTime(player.averageTurnTime)}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${stats.mode === 2 ? `
+                                        <div class="stat-row">
+                                            <span>Final Turn:</span>
+                                            <span>${this.timerEngine.formatTime(player.finalTurnTime)}</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>Final Round:</span>
+                                            <span>${this.timerEngine.formatTime(player.finalRoundTime)}</span>
+                                        </div>
+                                        ${player.wasOvertime ? `
+                                            <div class="stat-row overtime-stat">
+                                                <span>Overtime:</span>
+                                                <span>${this.timerEngine.formatTime(player.overtimeSeconds)}</span>
+                                            </div>
+                                        ` : ''}
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="stats-footer">
+                    <button class="btn-primary stats-ok">New Game</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Bind events
+        modal.querySelector('.stats-close').onclick = () => this.closeStatsModal(modal);
+        modal.querySelector('.stats-ok').onclick = () => this.closeStatsModal(modal);
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeStatsModal(modal);
+        };
+        
+        // Animate in
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 50);
+    }
+    
+    closeStatsModal(modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+        
+        // Clean up game state and return to setup
         this.cleanup();
-
+        
+        // Release wake lock when game ends
+        if (window.WakeLockManager) {
+            window.WakeLockManager.releaseWakeLock();
+        }
+        
         // Return to setup screen
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('setup-screen').classList.add('active');
@@ -390,6 +490,19 @@ class GameTimer {
         this.lastPlayerIndex = -1;
     }
 
+    toggleTurnHistory() {
+        const historyPanel = document.getElementById('turn-history');
+        const toggleBtn = document.getElementById('history-toggle');
+        
+        if (historyPanel.classList.contains('collapsed')) {
+            historyPanel.classList.remove('collapsed');
+            toggleBtn.innerHTML = '📁 Hide History';
+        } else {
+            historyPanel.classList.add('collapsed');
+            toggleBtn.innerHTML = '📜 Turn History';
+        }
+    }
+    
     getContrastColor(hexColor) {
         // Simple contrast calculation
         const r = parseInt(hexColor.substr(1, 2), 16);

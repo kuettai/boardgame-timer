@@ -1,10 +1,12 @@
-const CACHE_NAME = 'boardgame-timer-v1.0';
+const CACHE_NAME = 'boardgame-timer-v1.1';
 const urlsToCache = [
   '/',
   '/index.html',
   '/css/main.css',
   '/css/setup.css',
   '/css/animations.css',
+  '/css/themes.css',
+  '/css/polish.css',
   '/js/app.js',
   '/js/player-setup.js',
   '/js/timer-engine.js',
@@ -12,6 +14,11 @@ const urlsToCache = [
   '/js/game-timer.js',
   '/js/ui-effects.js',
   '/js/storage-manager.js',
+  '/js/wake-lock.js',
+  '/js/theme-manager.js',
+  '/js/sound-manager.js',
+  '/js/haptic-manager.js',
+  '/js/keyboard-handler.js',
   '/manifest.json'
 ];
 
@@ -60,8 +67,13 @@ self.addEventListener('fetch', (event) => {
         }
         
         return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
+          // Don't cache non-successful responses or non-http requests
           if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          
+          // Don't cache chrome-extension or other non-http schemes
+          if (!event.request.url.startsWith('http')) {
             return response;
           }
 

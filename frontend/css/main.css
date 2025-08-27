@@ -20,15 +20,14 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--background);
     color: var(--text);
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
 #app {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
@@ -39,6 +38,7 @@ body {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
+    min-height: calc(100vh - 2rem);
 }
 
 .screen.active {
@@ -124,11 +124,19 @@ button:disabled {
 }
 
 #timer-value {
-    font-size: 4rem;
+    font-size: 5.5rem;
     font-weight: bold;
     font-family: 'Courier New', monospace;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    margin-bottom: 0.5rem;
+}
+
+#game-duration {
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    opacity: 0.7;
     margin-bottom: 1rem;
+    color: var(--text-secondary);
 }
 
 #all-players {
@@ -202,9 +210,64 @@ button:disabled {
     50% { opacity: 0.7; }
 }
 
+@keyframes alertPulse {
+    0% { transform: scale(1); color: inherit; }
+    50% { transform: scale(1.1); color: #FF6B6B; }
+    100% { transform: scale(1); color: inherit; }
+}
+
+@keyframes overtimePulse {
+    0% { 
+        background-color: rgba(244, 67, 54, 0.1);
+        transform: scale(1);
+    }
+    50% { 
+        background-color: rgba(244, 67, 54, 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        background-color: rgba(244, 67, 54, 0.1);
+        transform: scale(1);
+    }
+}
+
+@keyframes screenFlash {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(244, 67, 54, 0.2); }
+    100% { background-color: transparent; }
+}
+
+@keyframes urgentShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
 .overtime-player {
     border-left-color: #F44336 !important;
     background: rgba(244, 67, 54, 0.1) !important;
+}
+
+.overtime-enhanced {
+    color: #F44336 !important;
+    animation: overtimePulse 1s infinite;
+    text-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+}
+
+.overtime-screen {
+    animation: overtimePulse 2s infinite;
+    border: 2px solid rgba(244, 67, 54, 0.3);
 }
 
 /* Dual Timer Display for Mode 2 */
@@ -233,7 +296,7 @@ button:disabled {
     }
     
     #timer-value {
-        font-size: 3rem;
+        font-size: 4rem;
     }
     
     .dual-timer {
@@ -247,6 +310,10 @@ button:disabled {
     #current-player {
         font-size: 1.2rem;
         padding: 0.5rem 1rem;
+    }
+    
+    #game-duration {
+        font-size: 0.9rem;
     }
     
     #all-players {

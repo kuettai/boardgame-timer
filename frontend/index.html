@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BoardGame Timer</title>
     
     <!-- PWA Meta Tags -->
@@ -16,8 +16,33 @@
     <!-- Hide Safari UI elements when installed -->
     <meta name="format-detection" content="telephone=no">
     <style>
+        /* Handle dynamic viewport changes from browser UI */
+        :root {
+            --vh: 1vh;
+        }
+        
         @media (display-mode: standalone) {
-            body { padding-top: env(safe-area-inset-top); }
+            body { 
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+        
+        /* Ensure content is always scrollable on mobile */
+        @media (max-width: 480px) {
+            body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            #app {
+                min-height: calc(var(--vh, 1vh) * 100);
+            }
+            
+            .screen {
+                min-height: calc(var(--vh, 1vh) * 100 - 2rem);
+                padding-bottom: 4rem;
+            }
         }
     </style>
     
@@ -43,6 +68,9 @@
             <div class="header-controls">
                 <h1>BoardGame Timer</h1>
                 <div class="control-buttons">
+                    <a href="https://github.com/kuettai/boardgame-timer/issues" target="_blank" class="github-link" title="Report an issue on GitHub">
+                        🐛
+                    </a>
                     <button id="sound-toggle" class="control-btn" title="Toggle Sound Effects">
                         🔊
                     </button>
@@ -117,6 +145,13 @@
             </div>
 
             <button id="start-game" class="btn-primary">Start Game</button>
+            
+            <div class="footer-credit">
+                Built by Amazon Q • Author: KT • 
+                <a href="https://www.paypal.com/paypalme/kuettai" target="_blank" class="footer-coffee-link" title="Buy me a coffee">
+                    ☕ Coffee
+                </a>
+            </div>
         </div>
 
         <!-- Game Screen -->
@@ -124,11 +159,24 @@
             <div id="timer-display">
                 <div id="current-player"></div>
                 <div id="timer-value">00:00</div>
+                <div id="game-duration">Game: 00:00</div>
             </div>
             <div id="all-players"></div>
+            
+            <div class="turn-history-section">
+                <button id="history-toggle" class="history-toggle">📜 Turn History</button>
+                <div id="turn-history" class="turn-history collapsed">
+                    <div class="history-header">Recent Turns</div>
+                    <div id="history-list" class="history-list"></div>
+                </div>
+            </div>
+            
             <div class="game-controls">
                 <button id="pause-btn">Pause</button>
                 <button id="end-game-btn">End Game</button>
+            </div>
+            <div class="keyboard-hints">
+                <span>⌨️ Space: Next • ESC: Pause</span>
             </div>
         </div>
     </div>
@@ -141,6 +189,7 @@
     <script src="js/theme-manager.js"></script>
     <script src="js/sound-manager.js"></script>
     <script src="js/haptic-manager.js"></script>
+    <script src="js/keyboard-handler.js"></script>
     <script src="js/game-timer.js"></script>
     <script src="js/player-setup.js"></script>
     <script src="js/app.js"></script>

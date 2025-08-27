@@ -28,6 +28,9 @@ class App {
         // Handle back button / navigation
         this.handleNavigation();
         
+        // Handle dynamic viewport height for mobile
+        this.handleViewportHeight();
+        
         console.log('BoardGame Timer initialized');
         
         // Register service worker for PWA
@@ -90,9 +93,10 @@ class App {
             this.hideInstallButton();
         }
         
-        // Debug: Show install button anyway for testing
+        // Show manual install button only if no automatic prompt and not dismissed
         setTimeout(() => {
-            if (!document.getElementById('install-btn')) {
+            if (!document.getElementById('install-banner') && 
+                localStorage.getItem('install-banner-dismissed') !== 'true') {
                 console.log('No install prompt detected, showing manual button');
                 this.showManualInstallButton();
             }
@@ -100,32 +104,54 @@ class App {
     }
     
     showInstallButton(deferredPrompt) {
-        // Create install button if not exists
-        if (!document.getElementById('install-btn')) {
-            const installBtn = document.createElement('button');
-            installBtn.id = 'install-btn';
-            installBtn.className = 'install-btn';
-            installBtn.innerHTML = '📱 Install App';
-            installBtn.onclick = () => {
+        // Check if user dismissed install banner
+        if (localStorage.getItem('install-banner-dismissed') === 'true') {
+            return;
+        }
+        
+        // Create install banner if not exists
+        if (!document.getElementById('install-banner')) {
+            const installBanner = document.createElement('div');
+            installBanner.id = 'install-banner';
+            installBanner.className = 'install-banner';
+            installBanner.innerHTML = `
+                <div class="install-content">
+                    <span>📱 Install as App</span>
+                    <div class="install-actions">
+                        <button id="install-btn" class="btn-install">Install</button>
+                        <button id="dismiss-install" class="btn-dismiss">✕</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add to setup screen
+            const setupScreen = document.getElementById('setup-screen');
+            setupScreen.insertBefore(installBanner, setupScreen.firstChild);
+            
+            // Bind install button
+            document.getElementById('install-btn').onclick = () => {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') {
                         console.log('User accepted the install prompt');
                     }
+                    this.hideInstallButton();
                     deferredPrompt = null;
                 });
             };
             
-            // Add to setup screen
-            const setupScreen = document.getElementById('setup-screen');
-            setupScreen.insertBefore(installBtn, setupScreen.firstChild);
+            // Bind dismiss button
+            document.getElementById('dismiss-install').onclick = () => {
+                localStorage.setItem('install-banner-dismissed', 'true');
+                this.hideInstallButton();
+            };
         }
     }
     
     hideInstallButton() {
-        const installBtn = document.getElementById('install-btn');
-        if (installBtn) {
-            installBtn.remove();
+        const installBanner = document.getElementById('install-banner');
+        if (installBanner) {
+            installBanner.remove();
         }
     }
     
@@ -175,16 +201,36 @@ class App {
     }
     
     showManualInstallButton() {
-        const installBtn = document.createElement('button');
-        installBtn.id = 'install-btn';
-        installBtn.className = 'install-btn';
-        installBtn.innerHTML = '📱 Add to Home Screen';
-        installBtn.onclick = () => {
+        // Check if user dismissed install banner
+        if (localStorage.getItem('install-banner-dismissed') === 'true') {
+            return;
+        }
+        
+        const installBanner = document.createElement('div');
+        installBanner.id = 'install-banner';
+        installBanner.className = 'install-banner';
+        installBanner.innerHTML = `
+            <div class="install-content">
+                <span>📱 Add to Home Screen</span>
+                <div class="install-actions">
+                    <button id="install-btn" class="btn-install">How?</button>
+                    <button id="dismiss-install" class="btn-dismiss">✕</button>
+                </div>
+            </div>
+        `;
+        
+        const setupScreen = document.getElementById('setup-screen');
+        setupScreen.insertBefore(installBanner, setupScreen.firstChild);
+        
+        // Bind buttons
+        document.getElementById('install-btn').onclick = () => {
             alert('To install:\n\n1. Chrome Menu (⋮) → "Add to Home screen"\n2. Or look for install icon in address bar\n3. Name it "BoardGame Timer"');
         };
         
-        const setupScreen = document.getElementById('setup-screen');
-        setupScreen.insertBefore(installBtn, setupScreen.firstChild);
+        document.getElementById('dismiss-install').onclick = () => {
+            localStorage.setItem('install-banner-dismissed', 'true');
+            this.hideInstallButton();
+        };
     }
     
     checkForSavedGame() {
@@ -281,6 +327,23 @@ class App {
         
         // Push initial state
         history.pushState(null, null, location.href);
+    }
+    
+    handleViewportHeight() {
+        // Handle dynamic viewport height changes on mobile
+        const setVH = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        
+        // Set initial value
+        setVH();
+        
+        // Update on resize (when browser UI appears/disappears)
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setVH, 100);
+        });
     }
 }
 
