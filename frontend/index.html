@@ -77,28 +77,49 @@
             <div class="header-controls">
                 <h1>BoardGame Timer</h1>
                 <div class="control-buttons">
+                    <button id="whats-new-btn" class="control-btn" title="What's New">
+                        📰
+                    </button>
+                    <a href="https://www.paypal.com/paypalme/kuettai" target="_blank" class="control-btn coffee-link" title="Buy me a coffee">
+                        ☕
+                    </a>
                     <a href="https://github.com/kuettai/boardgame-timer/issues" target="_blank" class="github-link" title="Report an issue on GitHub">
                         🐛
                     </a>
                     <button id="sound-toggle" class="control-btn" title="Toggle Sound Effects">
                         🔊
                     </button>
-                    <button id="theme-toggle" class="control-btn" title="Toggle Dark/Light Theme">
-                        🌙
+                    <button id="theme-selector" class="control-btn" title="Select Theme">
+                        🎨
                     </button>
                 </div>
             </div>
             
-            <!-- Mode Selection -->
-            <div class="mode-selection">
-                <label>
-                    <input type="radio" name="mode" value="1" checked>
-                    <span>Mode 1: Track Time</span>
-                </label>
-                <label>
-                    <input type="radio" name="mode" value="2">
-                    <span>Mode 2: Countdown</span>
-                </label>
+            <!-- Mode and Flow Selection -->
+            <div class="mode-flow-container">
+                <div class="mode-selection">
+                    <h3>Game Mode</h3>
+                    <label>
+                        <input type="radio" name="mode" value="1" checked>
+                        <span>Mode 1: Track Time</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="mode" value="2">
+                        <span>Mode 2: Countdown</span>
+                    </label>
+                </div>
+                
+                <div class="turn-flow-selection">
+                    <h3>Turn Flow</h3>
+                    <label>
+                        <input type="radio" name="turnFlow" value="sequential" checked>
+                        <span>Sequential (P1→P2→P3→P1...)</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="turnFlow" value="manual">
+                        <span>Manual Selection</span>
+                    </label>
+                </div>
             </div>
 
             <!-- Template Selection (Mode 2 only) -->
@@ -160,6 +181,9 @@
                 <a href="https://www.paypal.com/paypalme/kuettai" target="_blank" class="footer-coffee-link" title="Buy me a coffee">
                     ☕ Coffee
                 </a>
+                <div class="version-info">
+                    v1.2 • Updated Aug 2025
+                </div>
             </div>
         </div>
 
@@ -170,6 +194,12 @@
                 <div id="timer-value">00:00</div>
                 <div id="game-duration">Game: 00:00</div>
             </div>
+            
+            <div id="manual-selection" class="manual-selection" style="display: none;">
+                <div class="manual-selection-header">Choose Next Player:</div>
+                <div id="manual-player-buttons" class="manual-player-buttons"></div>
+            </div>
+            
             <div id="all-players"></div>
             
             <div class="turn-history-section">
@@ -184,7 +214,7 @@
                 <button id="pause-btn">Pause</button>
                 <button id="end-game-btn">End Game</button>
             </div>
-            <div class="keyboard-hints">
+            <div id="keyboard-hints" class="keyboard-hints">
                 <span>⌨️ Space: Next • ESC: Pause</span>
             </div>
         </div>

@@ -57,15 +57,23 @@ class CountdownTimer extends TimerEngine {
 
             // Track total time for statistics
             currentPlayer.totalTime += deltaTime;
+            
+            // Track total game time
+            this.totalGameTime += deltaTime;
         } else {
             // Mode 1: Regular time tracking
             currentPlayer.totalTime += deltaTime;
+            
+            // Track total game time
+            this.totalGameTime += deltaTime;
         }
 
         this.triggerUpdate();
         
-        // Auto-save game state every 5 seconds
-        if (Math.floor(now / 1000) % 5 === 0) {
+        // Auto-save game state every 5 seconds (with debounce)
+        const currentSecond = Math.floor(now / 1000);
+        if (currentSecond % 5 === 0 && currentSecond !== this.lastSaveSecond) {
+            this.lastSaveSecond = currentSecond;
             this.saveGameState();
         }
     }
@@ -79,8 +87,12 @@ class CountdownTimer extends TimerEngine {
                 isPaused: this.isPaused,
                 startTime: this.startTime,
                 template: this.template,
+                turnFlow: this.turnFlow,
+                globalTurnNumber: this.globalTurnNumber,
+                totalGameTime: this.totalGameTime,
                 gameStarted: true
             };
+
             window.StorageManager.saveGameState(gameState);
         }
     }

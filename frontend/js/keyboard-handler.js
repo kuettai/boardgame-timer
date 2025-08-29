@@ -39,7 +39,7 @@ class KeyboardHandler {
             switch (e.code) {
                 case 'Space':
                     e.preventDefault();
-                    if (!window.GameTimer.timerEngine.isPaused) {
+                    if (!window.GameTimer.timerEngine.isPaused && window.GameTimer.timerEngine.turnFlow === 'sequential') {
                         window.GameTimer.timerEngine.nextPlayer();
                     }
                     break;

@@ -326,3 +326,17 @@ button:disabled {
         font-size: 0.8rem;
     }
 }
+
+/* Coffee Link Styling */
+.coffee-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coffee-link:hover {
+    background: #FFDD44 !important;
+    color: #8B4513 !important;
+    transform: scale(1.1);
+}

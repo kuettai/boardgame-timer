@@ -3,21 +3,25 @@ class TimerEngine {
         this.players = gameData.players.map((player, index) => ({
             name: player.name,
             color: player.color,
-            id: index, // Use simple sequential index
-            totalTime: 0,
-            turnsCount: 0,
-            isActive: index === 0
+            id: player.id !== undefined ? player.id : index,
+            totalTime: player.totalTime || 0,
+            turnsCount: player.turnsCount || 0,
+            isActive: player.isActive !== undefined ? player.isActive : (index === 0)
         }));
         
         this.mode = gameData.mode;
-        this.currentPlayerIndex = 0;
-        this.isPaused = false;
-        this.startTime = null;
+        this.turnFlow = gameData.turnFlow || 'sequential';
+        this.globalTurnNumber = gameData.globalTurnNumber || 0;
+        this.currentPlayerIndex = gameData.currentPlayerIndex || 0;
+        this.isPaused = gameData.isPaused || false;
+        this.startTime = gameData.startTime || null;
+        this.totalGameTime = gameData.totalGameTime || 0;
         this.lastUpdateTime = null;
         this.timerInterval = null;
         this.updateCallback = null;
         this.turnHistory = [];
         this.maxHistoryItems = 10;
+        this.lastSaveSecond = -1;
     }
 
     start() {
@@ -26,6 +30,11 @@ class TimerEngine {
         if (this.isPaused) {
             // Resume from pause
             this.lastUpdateTime = performance.now();
+            this.isPaused = false;
+        } else if (this.startTime) {
+            // Resume from saved state - adjust startTime to account for elapsed time
+            const now = performance.now();
+            this.lastUpdateTime = now;
             this.isPaused = false;
         } else {
             // Fresh start
@@ -72,6 +81,9 @@ class TimerEngine {
         const deltaTime = (now - this.lastUpdateTime) / 1000;
         this.lastUpdateTime = now;
 
+        // Update total game time (always)
+        this.totalGameTime += deltaTime;
+
         // Update current player's time (Mode 1: accumulate time)
         if (this.mode === 1) {
             this.players[this.currentPlayerIndex].totalTime += deltaTime;
@@ -79,8 +91,10 @@ class TimerEngine {
 
         this.triggerUpdate();
         
-        // Auto-save game state every 5 seconds
-        if (Math.floor(now / 1000) % 5 === 0) {
+        // Auto-save game state every 5 seconds (with debounce)
+        const currentSecond = Math.floor(now / 1000);
+        if (currentSecond % 5 === 0 && currentSecond !== this.lastSaveSecond) {
+            this.lastSaveSecond = currentSecond;
             this.saveGameState();
         }
     }
@@ -93,8 +107,12 @@ class TimerEngine {
                 currentPlayerIndex: this.currentPlayerIndex,
                 isPaused: this.isPaused,
                 startTime: this.startTime,
+                turnFlow: this.turnFlow,
+                globalTurnNumber: this.globalTurnNumber,
+                totalGameTime: this.totalGameTime,
                 gameStarted: true
             };
+
             window.StorageManager.saveGameState(gameState);
         }
     }
@@ -180,6 +198,9 @@ class TimerEngine {
             // Mode 2: Time used from turn timer
             turnTime = (this.template?.turn_time_seconds || 60) - (player.turnTime || 0);
         }
+        
+        // Increment global turn number
+        this.globalTurnNumber++;
             
         const historyItem = {
             playerId: player.id,
@@ -187,7 +208,7 @@ class TimerEngine {
             playerColor: player.color,
             turnTime: Math.max(0, turnTime),
             timestamp: Date.now(),
-            turnNumber: player.turnsCount + 1,
+            turnNumber: this.globalTurnNumber,
             previousTotal: player.totalTime
         };
         

@@ -29,6 +29,7 @@ class StorageManager {
             if (!saved) return null;
 
             const gameState = JSON.parse(saved);
+
             
             // Check if state is too old (24 hours)
             if (Date.now() - gameState.timestamp > 24 * 60 * 60 * 1000) {

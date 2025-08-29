@@ -18,8 +18,13 @@ class GameTimer {
             this.timerEngine = new TimerEngine(gameData);
         }
         
+        // Restore turn flow and global turn number from saved state
+        this.timerEngine.turnFlow = gameData.turnFlow || 'sequential';
+        this.timerEngine.globalTurnNumber = gameData.globalTurnNumber || 0;
+        
         this.uiEffects = window.UIEffects;
         this.lastPlayerIndex = -1;
+        this.turnFlow = gameData.turnFlow || 'sequential';
         
         // Only setup UI and events if not already initialized
         if (!this.isInitialized) {
@@ -63,10 +68,12 @@ class GameTimer {
         }
         
         // Restore game state
+        console.log('Restoring players:', savedState.players);
         this.timerEngine.players = savedState.players;
         this.timerEngine.currentPlayerIndex = savedState.currentPlayerIndex;
         this.timerEngine.isPaused = savedState.isPaused;
         this.timerEngine.startTime = savedState.startTime;
+        console.log('Current player after restore:', this.timerEngine.getCurrentPlayer());
         
         this.uiEffects = window.UIEffects;
         this.lastPlayerIndex = -1;
@@ -104,6 +111,20 @@ class GameTimer {
                 isPaused: false,
                 mode: this.timerEngine.mode
             });
+            
+            // Setup manual selection after display update
+            console.log('Turn flow mode:', this.timerEngine.turnFlow);
+            if (this.timerEngine.turnFlow === 'manual') {
+                console.log('Setting up manual selection...');
+                this.setupManualSelection();
+                // Update keyboard hints for manual mode
+                const keyboardHints = document.getElementById('keyboard-hints');
+                if (keyboardHints) {
+                    keyboardHints.innerHTML = '<span>⌨️ ESC: Pause • Click players to switch</span>';
+                }
+            } else {
+                console.log('Not manual mode, turnFlow is:', this.timerEngine.turnFlow);
+            }
         }, 100);
     }
 
@@ -148,9 +169,8 @@ class GameTimer {
         
         // Update game duration
         const gameDurationEl = document.getElementById('game-duration');
-        if (gameDurationEl && this.timerEngine.startTime) {
-            const totalGameTime = (performance.now() - this.timerEngine.startTime) / 1000;
-            gameDurationEl.textContent = `Game: ${this.timerEngine.formatTime(totalGameTime)}`;
+        if (gameDurationEl) {
+            gameDurationEl.textContent = `Game: ${this.timerEngine.formatTime(this.timerEngine.totalGameTime || 0)}`;
         }
 
         // Update all players display
@@ -249,6 +269,9 @@ class GameTimer {
         document.title = gameState.isPaused ? 
             'PAUSED - BoardGame Timer' : 
             `${gameState.currentPlayer?.name || 'Player'}'s Turn - BoardGame Timer`;
+            
+        // Update manual selection buttons if in manual mode
+        this.updateManualButtons();
     }
 
     setupTouchHandler() {
@@ -273,15 +296,18 @@ class GameTimer {
 
             if (this.timerEngine) {
                 if (!this.timerEngine.isPaused) {
-                    // Create touch ripple effect
-                    const rect = gameScreen.getBoundingClientRect();
-                    const x = (e.clientX || e.touches?.[0]?.clientX || rect.width / 2) - rect.left;
-                    const y = (e.clientY || e.touches?.[0]?.clientY || rect.height / 2) - rect.top;
-                    
-                    this.uiEffects?.createTouchRipple(x, y, gameScreen);
-                    
-                    console.log('Touch detected, advancing player');
-                    this.timerEngine.nextPlayer();
+                    // Only auto-advance in sequential mode
+                    if (this.timerEngine.turnFlow === 'sequential') {
+                        // Create touch ripple effect
+                        const rect = gameScreen.getBoundingClientRect();
+                        const x = (e.clientX || e.touches?.[0]?.clientX || rect.width / 2) - rect.left;
+                        const y = (e.clientY || e.touches?.[0]?.clientY || rect.height / 2) - rect.top;
+                        
+                        this.uiEffects?.createTouchRipple(x, y, gameScreen);
+                        
+                        console.log('Touch detected, advancing player');
+                        this.timerEngine.nextPlayer();
+                    }
                 } else {
                     // Game is paused - show visual feedback
                     this.uiEffects?.shakeElement(document.getElementById('pause-overlay'));
@@ -333,7 +359,12 @@ class GameTimer {
         const confirmEnd = confirm('Are you sure you want to end the game?');
         if (!confirmEnd) return;
 
-        const gameStats = this.timerEngine.end();
+        // Get stats before ending (which clears the state)
+        const gameStats = this.timerEngine.getGameStats();
+        
+        // Stop the timer but don't clear state yet
+        this.timerEngine.pause();
+        
         this.showGameStats(gameStats);
     }
 
@@ -458,6 +489,11 @@ class GameTimer {
         // Clean up game state and return to setup
         this.cleanup();
         
+        // Clear saved game state so resume banner doesn't appear
+        if (window.StorageManager) {
+            window.StorageManager.clearGameState();
+        }
+        
         // Release wake lock when game ends
         if (window.WakeLockManager) {
             window.WakeLockManager.releaseWakeLock();
@@ -467,6 +503,20 @@ class GameTimer {
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('setup-screen').classList.add('active');
         document.title = 'BoardGame Timer';
+        
+        // Remove resume banner if it exists and prevent re-showing
+        const resumeBanner = document.getElementById('resume-banner');
+        if (resumeBanner) {
+            resumeBanner.remove();
+        }
+        
+        // Set flag to prevent auto-showing resume banner
+        if (window.app) {
+            window.app.gameJustEnded = true;
+            setTimeout(() => {
+                window.app.gameJustEnded = false;
+            }, 1000);
+        }
         
         // Reset player setup for clean state
         if (window.app && window.app.playerSetup) {
@@ -502,6 +552,82 @@ class GameTimer {
             toggleBtn.innerHTML = '📜 Turn History';
         }
     }
+    
+    setupManualSelection() {
+        const manualSection = document.getElementById('manual-selection');
+        const buttonsContainer = document.getElementById('manual-player-buttons');
+        
+        manualSection.style.display = 'block';
+        
+        // Create buttons for each player
+        buttonsContainer.innerHTML = '';
+        this.timerEngine.players.forEach((player, index) => {
+            const button = document.createElement('button');
+            button.className = 'manual-player-btn';
+            button.textContent = player.name;
+            button.style.borderColor = player.color;
+            button.style.color = player.color;
+            button.dataset.playerIndex = index;
+            
+            button.addEventListener('click', () => {
+                this.selectPlayer(index);
+            });
+            
+            buttonsContainer.appendChild(button);
+        });
+        
+        this.updateManualButtons();
+    }
+    
+    selectPlayer(playerIndex) {
+        if (playerIndex === this.timerEngine.currentPlayerIndex) return;
+        
+        // Record current player's turn before switching
+        const currentPlayer = this.timerEngine.getCurrentPlayer();
+        this.timerEngine.recordTurn(currentPlayer);
+        
+        // Mark current player as inactive and increment turn count
+        currentPlayer.isActive = false;
+        currentPlayer.turnsCount++;
+        
+        // Switch to selected player
+        this.timerEngine.currentPlayerIndex = playerIndex;
+        this.timerEngine.players[playerIndex].isActive = true;
+        
+        // Reset turn timer for Mode 2
+        if (this.timerEngine.mode === 2) {
+            this.timerEngine.players[playerIndex].turnTime = this.timerEngine.template?.turn_time_seconds || 60;
+            this.timerEngine.players[playerIndex].isOvertime = false;
+            this.timerEngine.players[playerIndex].alert10Triggered = false;
+            this.timerEngine.players[playerIndex].alert5Triggered = false;
+        }
+        
+        // Play turn change sound and haptic
+        if (window.SoundManager) {
+            window.SoundManager.playTurnChange();
+        }
+        if (window.HapticManager) {
+            window.HapticManager.vibrateTurnChange();
+        }
+        
+        this.timerEngine.triggerUpdate();
+        this.updateManualButtons();
+    }
+    
+    updateManualButtons() {
+        if (this.timerEngine.turnFlow !== 'manual') return;
+        
+        const buttons = document.querySelectorAll('.manual-player-btn');
+        buttons.forEach((button, index) => {
+            if (index === this.timerEngine.currentPlayerIndex) {
+                button.classList.add('current-player');
+            } else {
+                button.classList.remove('current-player');
+            }
+        });
+    }
+    
+
     
     getContrastColor(hexColor) {
         // Simple contrast calculation

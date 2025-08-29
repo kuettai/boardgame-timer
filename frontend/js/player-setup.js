@@ -326,6 +326,11 @@ class PlayerSetup {
         return templates[templateType];
     }
 
+    getTurnFlow() {
+        const turnFlowInput = document.querySelector('input[name="turnFlow"]:checked');
+        return turnFlowInput ? turnFlowInput.value : 'sequential';
+    }
+    
     getPlayerData() {
         const gameData = {
             players: this.players.map(p => ({
@@ -334,7 +339,8 @@ class PlayerSetup {
                 totalTime: 0,
                 turnsCount: 0
             })),
-            mode: this.getGameMode()
+            mode: this.getGameMode(),
+            turnFlow: this.getTurnFlow()
         };
         
         if (gameData.mode === 2) {
@@ -362,24 +368,27 @@ class PlayerSetup {
         });
         
         container.addEventListener('dragenter', (e) => {
-            if (e.target.classList.contains('player-item') && e.target !== draggedElement) {
-                e.target.style.borderTop = '2px solid var(--accent-primary)';
+            const playerItem = e.target.closest('.player-item');
+            if (playerItem && playerItem !== draggedElement) {
+                playerItem.classList.add('drag-over');
             }
         });
         
         container.addEventListener('dragleave', (e) => {
-            if (e.target.classList.contains('player-item')) {
-                e.target.style.borderTop = '';
+            const playerItem = e.target.closest('.player-item');
+            if (playerItem) {
+                playerItem.classList.remove('drag-over');
             }
         });
         
         container.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (e.target.classList.contains('player-item') && e.target !== draggedElement && draggedElement) {
+            const targetItem = e.target.closest('.player-item');
+            if (targetItem && targetItem !== draggedElement && draggedElement) {
                 // Get fresh indices from DOM
                 const allItems = Array.from(container.querySelectorAll('.player-item'));
                 const draggedIndex = allItems.indexOf(draggedElement);
-                const targetIndex = allItems.indexOf(e.target);
+                const targetIndex = allItems.indexOf(targetItem);
                 
                 this.reorderPlayers(draggedIndex, targetIndex);
                 draggedElement = null;
@@ -421,12 +430,12 @@ class PlayerSetup {
                 
                 // Clear previous highlights
                 container.querySelectorAll('.player-item').forEach(item => {
-                    item.style.borderTop = '';
+                    item.classList.remove('drag-over');
                 });
                 
                 // Highlight target
                 if (targetItem && targetItem !== touchElement) {
-                    targetItem.style.borderTop = '2px solid var(--accent-primary)';
+                    targetItem.classList.add('drag-over');
                 }
             }
         }, { passive: false });
@@ -469,8 +478,8 @@ class PlayerSetup {
         container.querySelectorAll('.player-item').forEach(item => {
             item.style.opacity = '';
             item.style.transform = '';
-            item.style.borderTop = '';
             item.style.zIndex = '';
+            item.classList.remove('drag-over');
         });
     }
 

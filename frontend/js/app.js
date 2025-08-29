@@ -33,6 +33,9 @@ class App {
         
         console.log('BoardGame Timer initialized');
         
+        // Load saved theme
+        this.loadSavedTheme();
+        
         // Register service worker for PWA
         this.registerServiceWorker();
         
@@ -43,6 +46,12 @@ class App {
         
         // Initialize sound controls
         this.initSoundControls();
+        
+        // Initialize What's New button
+        this.initWhatsNewButton();
+        
+        // Initialize theme selector
+        this.initThemeSelector();
         
         // Handle PWA install prompt
         this.handlePWAInstall();
@@ -234,8 +243,218 @@ class App {
     }
     
     checkForSavedGame() {
-        if (window.StorageManager && window.StorageManager.hasSavedGame()) {
+        if (window.StorageManager && window.StorageManager.hasSavedGame() && !this.gameJustEnded) {
             this.showResumeOption();
+        }
+    }
+    
+    initWhatsNewButton() {
+        const whatsNewBtn = document.getElementById('whats-new-btn');
+        if (whatsNewBtn) {
+            whatsNewBtn.addEventListener('click', () => {
+                this.showWhatsNewModal();
+            });
+        }
+    }
+    
+    showWhatsNewModal() {
+        const modal = document.createElement('div');
+        modal.className = 'whats-new-modal-overlay';
+        modal.innerHTML = `
+            <div class="whats-new-modal">
+                <div class="whats-new-header">
+                    <h2>📰 What's New - v1.2</h2>
+                    <button class="whats-new-close">×</button>
+                </div>
+                <div class="whats-new-content">
+                    <div class="changelog">
+                        <div class="changelog-section">
+                            <h3>🎯 New Features</h3>
+                            <ul>
+                                <li><strong>Game Themes System</strong> - 5 beautiful themes: Light, Dark, Wingspan, Azul, Sagrada, Gloomhaven</li>
+                                <li><strong>Immersive Atmospheres</strong> - Each theme has unique backgrounds, colors, and decorative elements</li>
+                                <li><strong>Theme-Specific Effects</strong> - Animated birds, flowing tiles, stained glass, flickering candles</li>
+                                <li><strong>Manual Player Selection</strong> - Choose next player manually instead of sequential flow</li>
+                                <li><strong>What's New Modal</strong> - Stay updated with latest features and improvements</li>
+                                <li><strong>Modern UI Design</strong> - Beautiful card-style radio buttons and improved layout</li>
+                            </ul>
+                        </div>
+                        <div class="changelog-section">
+                            <h3>🔧 Improvements</h3>
+                            <ul>
+                                <li><strong>Enhanced Text Visibility</strong> - Perfect readability across all themes with smart shadows</li>
+                                <li><strong>Theme Persistence</strong> - Your selected theme is remembered across sessions</li>
+                                <li><strong>Mobile-Optimized Themes</strong> - All themes work beautifully on mobile devices</li>
+                                <li><strong>Enhanced Resume</strong> - Properly saves and restores all game settings including turn flow</li>
+                                <li><strong>Better Performance</strong> - Reduced excessive auto-saving with smart debouncing</li>
+                                <li><strong>Accurate Game Timer</strong> - Fixed game duration tracking across player switches</li>
+                            </ul>
+                        </div>
+                        <div class="changelog-section">
+                            <h3>🎨 Theme Highlights</h3>
+                            <ul>
+                                <li><strong>Wingspan</strong> 🐦 - Nature theme with flowing birds and earth tones</li>
+                                <li><strong>Azul</strong> 🗿 - Colorful tile theme with geometric patterns</li>
+                                <li><strong>Sagrada</strong> 🏰 - Elegant stained glass cathedral with jewel tones</li>
+                                <li><strong>Gloomhaven</strong> ⚔️ - Dark fantasy with flickering candle atmosphere</li>
+                            </ul>
+                        </div>
+                        <div class="changelog-section">
+                            <h3>🐛 Bug Fixes</h3>
+                            <ul>
+                                <li>Fixed negative game timer on resume</li>
+                                <li>Fixed player time reset issues</li>
+                                <li>Fixed turn history numbering (now shows global turn sequence)</li>
+                                <li>Fixed service worker caching during development</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="whats-new-footer">
+                    <button class="btn-primary whats-new-ok">Got it!</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Bind events
+        modal.querySelector('.whats-new-close').onclick = () => this.closeWhatsNewModal(modal);
+        modal.querySelector('.whats-new-ok').onclick = () => this.closeWhatsNewModal(modal);
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeWhatsNewModal(modal);
+        };
+        
+        // Animate in
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 50);
+    }
+    
+    closeWhatsNewModal(modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+    }
+    
+    initThemeSelector() {
+        const themeBtn = document.getElementById('theme-selector');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                this.showThemeSelector();
+            });
+        }
+    }
+    
+    showThemeSelector() {
+        const modal = document.createElement('div');
+        modal.className = 'theme-modal-overlay';
+        modal.innerHTML = `
+            <div class="theme-modal">
+                <div class="theme-header">
+                    <h2>🎨 Select Theme</h2>
+                    <button class="theme-close">×</button>
+                </div>
+                <div class="theme-content">
+                    <div class="theme-options">
+                        <div class="theme-option" data-theme="light">
+                            <div class="theme-preview light-preview"></div>
+                            <span>Light</span>
+                        </div>
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-preview dark-preview"></div>
+                            <span>Dark</span>
+                        </div>
+                        <div class="theme-option" data-theme="wingspan">
+                            <div class="theme-preview wingspan-preview"></div>
+                            <span>🐦 Wingspan</span>
+                        </div>
+                        <div class="theme-option" data-theme="azul">
+                            <div class="theme-preview azul-preview"></div>
+                            <span>🗿 Azul</span>
+                        </div>
+                        <div class="theme-option" data-theme="sagrada">
+                            <div class="theme-preview sagrada-preview"></div>
+                            <span>🏰 Sagrada</span>
+                        </div>
+                        <div class="theme-option" data-theme="gloomhaven">
+                            <div class="theme-preview gloomhaven-preview"></div>
+                            <span>⚔️ Gloomhaven</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Bind events
+        modal.querySelector('.theme-close').onclick = () => this.closeThemeModal(modal);
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeThemeModal(modal);
+        };
+        
+        // Theme selection
+        modal.querySelectorAll('.theme-option').forEach(option => {
+            option.onclick = () => {
+                const theme = option.dataset.theme;
+                this.setTheme(theme);
+                this.closeThemeModal(modal);
+            };
+        });
+        
+        // Animate in
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 50);
+    }
+    
+    closeThemeModal(modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+    }
+    
+    setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('boardgame-timer-theme', theme);
+        
+        // Handle Gloomhaven candles
+        if (theme === 'gloomhaven') {
+            setTimeout(() => this.addGloomhavenCandles(), 100);
+        } else {
+            this.removeGloomhavenCandles();
+        }
+    }
+    
+    loadSavedTheme() {
+        const savedTheme = localStorage.getItem('boardgame-timer-theme') || 'light';
+        this.setTheme(savedTheme);
+    }
+    
+    addGloomhavenCandles() {
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay && !timerDisplay.querySelector('.extra-candle1')) {
+            const candles = ['extra-candle1', 'extra-candle2', 'extra-candle3'];
+            candles.forEach(candleClass => {
+                const candle = document.createElement('div');
+                candle.className = candleClass;
+                timerDisplay.appendChild(candle);
+            });
+        }
+    }
+    
+    removeGloomhavenCandles() {
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay) {
+            const candles = timerDisplay.querySelectorAll('.extra-candle1, .extra-candle2, .extra-candle3');
+            candles.forEach(candle => candle.remove());
         }
     }
     
